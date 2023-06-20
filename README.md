@@ -256,3 +256,23 @@ Reference
 ---------
 
 - https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki
+
+BIP350
+======
+
+This proposal improves the Bech32 with the addition of Bech32m, using Bitcoinj
+implementation at the moment but trying to use clojure as native solution to avoid 
+potential vulnerabilities in the future.
+
+The implementation of this adds support to segwit addresses and the future addition
+of [Taproot](https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki) soft fork.
+
+References
+----------
+
+- https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki
+- Test cases(Python) https://github.com/sipa/bech32/blob/master/ref/python/tests.py
+
+
+
+

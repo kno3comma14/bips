@@ -17,27 +17,18 @@
 ;; IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 ;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-(ns bips.bip350)
-
-(def encoding-charset "qpzry9x8gf2tvdw0s3jn54khce6mua7l")
-(def decoding-charset [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-                       -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-                       -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-                       15 -1 10 17 21 20 26 30 7 5 -1 -1 -1 -1 -1 -1
-                       -1 29 -1 24 13 25 9 8 23 -1 18 22 31 27 19 -1
-                       1 0 3 16 11 28 12 14 6 4 2 -1 -1 -1 -1 -1
-                       -1 29 -1 24 13 25 9 8 23 -1 18 22 31 27 19 -1
-                       1 0 3 16 11 28 12 14 6 4 2 -1 -1 -1 -1 -1])
+(ns bips.bip350
+  (:import org.bitcoinj.core.Bech32))
 
 (def bech32-constant 1)
 (def bech32m-constant 0x2bc830a3)
 (def encoding-type {:bech32 0 :bech32m 1})
 
-(defn bech32-hrp-expand
+(defn bech32-hrp-expand-internal
   "Expansion of the hrp. To execute this process we get hrp parameter and apply the
-  bit shift right 5 operatior to the first part, add the component zero to the resulting
+  bit shift right 5 operation to the first part, add the component zero to the resulting
   vector then add another vector at the end with and operation with the constant 31.
-  Reference: ``"
+  Reference: `https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki`"
   [hrp]
   (let [first-part (for [i hrp]
                      (bit-shift-right (int i) 5))
@@ -46,15 +37,18 @@
     (into [] (concat first-part connector second-part))))
 
 
-(def chk (atom 1))
+(def chk
+  "Value to save polymod - Atom"
+  (atom 1))
 
-(defn bech32-polymod
+(defn bech32-polymod-internal
+  "Function to calculate the bench32 checksum"
   [values]
   (loop [values-index 0]
     (if (>= values-index (count values))
       @chk
       (do
-        (let [c0 (bit-shift-right @chk 25)
+        (let [c0 (bit-and (unsigned-bit-shift-right @chk 25) 0xff)
               _ (reset! chk (bit-xor (bit-shift-left (bit-and @chk 0x1ffffff) 5) (bit-and (nth values values-index) 0xff)))]
           (when (not= (bit-and c0 1) 0)
             (reset! chk (bit-xor @chk 0x3b6a57b2)))
@@ -68,14 +62,25 @@
             (reset! chk (bit-xor @chk 0x2a1462b3))))
         (recur (+ values-index 1))))))
 
-(defn bech32-verify-checksum
+(defn bech32-verify-checksum-internal
+  "Fixing pending"
   [hrp, data]
-  (let [polymod (bech32-polymod (into [] (concat (bech32-hrp-expand hrp) data)))]
-    (when (= polymod 1)
-      (:bech32 encoding-type))
-    (when (= polymod bech32m-constant)
-      (:bech32m encoding-type))))
+  (let [polymod (bech32-polymod-internal (into [] (concat (bech32-hrp-expand-internal hrp) data)))]
+    (case polymod
+      bech32-constant (:bech32 encoding-type)
+      bech32m-constant (:bech32m encoding-type)
+      :not-valid-bech32)))
+
+;; Implementations done using external libraries
+(defn bech32-encode
+  "Encode a Bech32 string using Bitcoinj.
+  Receives a Bech32Data object as input parameter"
+  [bech]
+  (Bech32/encode bech))
+
+(defn bech32-decode
+  "Decode a Bech32 string using Bitcoinj."
+  [input-bechstr]
+  (Bech32/decode input-bechstr))
 
 
-(comment
-  (bech32-polymod [3 3 3 0 1 2 3]))
