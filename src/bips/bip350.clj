@@ -17,8 +17,7 @@
 ;; IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 ;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-(ns bips.bip350
-  (:import org.bitcoinj.core.Bech32))
+(ns bips.bip350)
 
 (def encoding-type {:bech32 1 :bech32m 0x2bc830a3})
 
