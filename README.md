@@ -260,9 +260,11 @@ Reference
 BIP350
 ======
 
-This proposal improves the Bech32 with the addition of Bech32m, using Bitcoinj
-implementation at the moment but trying to use clojure as native solution to avoid 
-potential vulnerabilities in the future.
+In [BIP173] the Bech32 encoding format was defined to deal mainly with segregated witness outputs.
+But the Bech32 has a weakness, whenever the last character of the input to encode is *p*, then the
+insertion or deletion of immediate characters doesn't validate the checksum.  
+
+This proposal improves the Bech32 with the addition of Bech32m, using clojure as native solution.
 
 The implementation of this adds support to segwit addresses and the future addition
 of [Taproot](https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki) soft fork.
