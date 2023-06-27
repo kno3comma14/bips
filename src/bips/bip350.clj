@@ -20,11 +20,21 @@
 (ns bips.bip350
   (:import org.bitcoinj.core.Bech32))
 
-(def bech32-constant 1)
-(def bech32m-constant 0x2bc830a3)
-(def encoding-type {:bech32 0 :bech32m 1})
+(def encoding-type {:bech32 1 :bech32m 0x2bc830a3})
 
-(defn bech32-hrp-expand-internal
+(def characters-reference "qpzry9x8gf2tvdw0s3jn54khce6mua7l")
+
+(def reversed-characters-reference
+  [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+   -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+   -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+   15 -1 10 17 21 20 26 30  7  5 -1 -1 -1 -1 -1 -1
+   -1 29 -1 24 13 25  9  8 23 -1 18 22 31 27 19 -1
+   1  0   3 16 11 28 12 14  6  4  2 -1 -1 -1 -1 -1
+   -1 29 -1 24 13 25  9  8 23 -1 18 22 31 27 19 -1
+   1  0   3 16 11 28  12 14 6  4  2 -1 -1 -1 -1 -1])
+
+(defn bech32-hrp-expand
   "Expansion of the hrp. To execute this process we get hrp parameter and apply the
   bit shift right 5 operation to the first part, add the component zero to the resulting
   vector then add another vector at the end with and operation with the constant 31.
@@ -38,11 +48,11 @@
 
 
 (def chk
-  "Value to save polymod - Atom"
+  "Value to partially save polymod - Atom"
   (atom 1))
 
-(defn bech32-polymod-internal
-  "Function to calculate the bench32 checksum"
+(defn bech32-polymod
+  "Function to calculate the bench32 polymod value"
   [values]
   (loop [values-index 0]
     (if (>= values-index (count values))
@@ -62,25 +72,56 @@
             (reset! chk (bit-xor @chk 0x2a1462b3))))
         (recur (+ values-index 1))))))
 
-(defn bech32-verify-checksum-internal
-  "Fixing pending"
+(defn bech32-verify-checksum
+  "Verifies if the checksum can be created using bech32 or bech32m methods."
   [hrp, data]
-  (let [polymod (bech32-polymod-internal (into [] (concat (bech32-hrp-expand-internal hrp) data)))]
+  (let [polymod (bech32-polymod (into [] (concat (bech32-hrp-expand hrp) data)))]
+    (reset! chk 1)
     (case polymod
-      bech32-constant (:bech32 encoding-type)
-      bech32m-constant (:bech32m encoding-type)
+      1 :bech32
+      0x2bc830a3 :bech32m
       :not-valid-bech32)))
 
-;; Implementations done using external libraries
-(defn bech32-encode
-  "Encode a Bech32 string using Bitcoinj.
-  Receives a Bech32Data object as input parameter"
-  [bech]
-  (Bech32/encode bech))
+(defn bech32-create-checksum
+  "Creates the checksum given the encoding type. Useful for encoding/decoding functions"
+  [encoding hrp data]
+  (let [expanded-hrp (bech32-hrp-expand hrp)
+        encoded-vec (into [] (concat expanded-hrp data [0 0 0 0 0 0]))
+        mod-value (bit-xor (bech32-polymod encoded-vec) (encoding encoding-type))]
+    (reset! chk 1)
+    (for [i (range 6)]
+      (byte (bit-and (unsigned-bit-shift-right mod-value (* 5 (- 5 i))) 31)))))
 
-(defn bech32-decode
-  "Decode a Bech32 string using Bitcoinj."
-  [input-bechstr]
-  (Bech32/decode input-bechstr))
+(defn bech32-encode-clojure
+  "Encode to bech32 using encoding type, hrp and data as parameters"
+  [encoding hrp data]
+  (let [lower-case-hrp (clojure.string/lower-case hrp)
+        checksum (bech32-create-checksum encoding lower-case-hrp data)
+        combined-vector (into [] (concat data checksum))
+        partial-result (str lower-case-hrp "1")]
+    (reduce (fn [acc, item] (str acc (nth characters-reference item)))
+            partial-result
+            combined-vector)))
+
+(defn bech32-decode-clojure
+  "Given a compatible bech32 or bech32m string, this function decode the string
+  to map that contains the data associated to a bech32 map"
+  [target]
+  (let [pos (clojure.string/index-of target "1")
+        data-length (- (count target) 1 pos)
+        values (for [i (range data-length)]
+                 (nth reversed-characters-reference (int (nth target (+ i pos 1)))))
+        hrp (clojure.string/lower-case (subs target 0 pos))
+        encoding (bech32-verify-checksum hrp values)]
+    {:encoding encoding
+     :hrp hrp
+     :data (subvec (vec values) 0 (- (count values) 6))}))
+
+
+;; (bip350/bech32-verify-checksum "a" [10, 28, 25, 31, 20, 31])
+;; (bip350/bech32-create-checksum :bech32 "a" [10, 28, 25, 31, 20, 31])
+;; 996825010
+;; [3, 0, 1, 10, 28, 25, 31, 20, 31, 0, 0, 0, 0, 0, 0]
+;; "a12uel5lak54an"
 
 
