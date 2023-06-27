@@ -92,7 +92,7 @@
     (for [i (range 6)]
       (byte (bit-and (unsigned-bit-shift-right mod-value (* 5 (- 5 i))) 31)))))
 
-(defn bech32-encode-clojure
+(defn bech32-encode
   "Encode to bech32 using encoding type, hrp and data as parameters"
   [encoding hrp data]
   (let [lower-case-hrp (clojure.string/lower-case hrp)
@@ -103,7 +103,7 @@
             partial-result
             combined-vector)))
 
-(defn bech32-decode-clojure
+(defn bech32-decode
   "Given a compatible bech32 or bech32m string, this function decode the string
   to map that contains the data associated to a bech32 map"
   [target]
@@ -116,12 +116,3 @@
     {:encoding encoding
      :hrp hrp
      :data (subvec (vec values) 0 (- (count values) 6))}))
-
-
-;; (bip350/bech32-verify-checksum "a" [10, 28, 25, 31, 20, 31])
-;; (bip350/bech32-create-checksum :bech32 "a" [10, 28, 25, 31, 20, 31])
-;; 996825010
-;; [3, 0, 1, 10, 28, 25, 31, 20, 31, 0, 0, 0, 0, 0, 0]
-;; "a12uel5lak54an"
-
-

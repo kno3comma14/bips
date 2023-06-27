@@ -1,0 +1,122 @@
+{:encode-input-data {:bech32m [{:encoding :bech32m
+                          :hrp      "a"
+                          :data     []}
+                         {:encoding :bech32m
+                          :hrp      "split"
+                          :data     [24
+                                     23
+                                     25
+                                     24
+                                     22
+                                     28
+                                     1
+                                     16
+                                     11
+                                     29
+                                     8
+                                     25
+                                     23
+                                     29
+                                     19
+                                     13
+                                     16
+                                     23
+                                     29
+                                     22
+                                     25
+                                     28
+                                     1
+                                     16
+                                     11
+                                     3
+                                     25
+                                     29
+                                     27
+                                     25
+                                     3
+                                     3
+                                     29
+                                     19
+                                     11
+                                     25
+                                     3
+                                     3
+                                     25
+                                     13
+                                     24
+                                     29
+                                     1
+                                     25
+                                     3
+                                     3
+                                     25
+                                     13]}
+                         {:encoding :bech32m
+                          :hrp      "?"
+                          :data     []}
+                         ]
+               :bech32  [{:encoding :bech32
+                          :hrp      "a"
+                          :data     []}
+                         {:encoding :bech32,
+                          :hrp      "split",
+                          :data     [24
+                                     23
+                                     25
+                                     24
+                                     22
+                                     28
+                                     1
+                                     16
+                                     11
+                                     29
+                                     8
+                                     25
+                                     23
+                                     29
+                                     19
+                                     13
+                                     16
+                                     23
+                                     29
+                                     22
+                                     25
+                                     28
+                                     1
+                                     16
+                                     11
+                                     3
+                                     25
+                                     29
+                                     27
+                                     25
+                                     3
+                                     3
+                                     29
+                                     19
+                                     11
+                                     25
+                                     3
+                                     3
+                                     25
+                                     13
+                                     24
+                                     29
+                                     1
+                                     25
+                                     3
+                                     3
+                                     25
+                                     13]}
+                         {:encoding :bech32
+                          :hrp      "?"
+                          :data     []}
+                         ]}
+ :decode-input-data {:bech32m ["A1LQFN3A"
+                         "a1lqfn3a"
+                         "split1checkupstagehandshakeupstreamerranterredcaperredlc445v"
+                         "?1v759aa"]
+               :bech32  ["A12UEL5L"
+                         "a12uel5l"
+                         "split1checkupstagehandshakeupstreamerranterredcaperred2y9e3w"
+                         "?1ezyfcl"]}}
