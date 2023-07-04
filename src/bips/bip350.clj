@@ -17,7 +17,8 @@
 ;; IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 ;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-(ns bips.bip350)
+(ns bips.bip350 
+  (:require [clojure.string :as str]))
 
 (def encoding-type {:bech32 1 :bech32m 0x2bc830a3})
 
@@ -94,7 +95,7 @@
 (defn bech32-encode
   "Encode to bech32 using encoding type, hrp and data as parameters"
   [encoding hrp data]
-  (let [lower-case-hrp (clojure.string/lower-case hrp)
+  (let [lower-case-hrp (str/lower-case hrp)
         checksum (bech32-create-checksum encoding lower-case-hrp data)
         combined-vector (into [] (concat data checksum))
         partial-result (str lower-case-hrp "1")]
@@ -106,11 +107,11 @@
   "Given a compatible bech32 or bech32m string, this function decode the string
   to map that contains the data associated to a bech32 map"
   [target]
-  (let [pos (clojure.string/index-of target "1")
+  (let [pos (str/index-of target "1")
         data-length (- (count target) 1 pos)
         values (for [i (range data-length)]
                  (nth reversed-characters-reference (int (nth target (+ i pos 1)))))
-        hrp (clojure.string/lower-case (subs target 0 pos))
+        hrp (str/lower-case (subs target 0 pos))
         encoding (bech32-verify-checksum hrp values)]
     {:encoding encoding
      :hrp hrp
