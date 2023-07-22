@@ -2,3 +2,6 @@
 .nrepl-port
 /bips.iml
 .idea
+.clj-kondo/
+.lsp/
+.calva/
